@@ -128,7 +128,7 @@ module Invoices
                 currency: invoice.currency.downcase,
                 unit_amount: invoice.total_due_amount_cents,
                 product_data: {
-                  name: invoice.number
+                  name: invoice.fees.first.item.name
                 }
               }
             }
@@ -146,10 +146,29 @@ module Invoices
               lago_invoice_id: invoice.id,
               invoice_issuing_date: invoice.issuing_date.iso8601,
               invoice_type: invoice.invoice_type,
-              payment_type: "one-time"
+              payment_type: "one-time",
+              line_1_description: invoice.fees.first.item.name,
+              line_1_quantity: 1,
+              line_1_unitprice: calculate_unit_amount_cents,
+              line_1_vatrate: get_correct_tax_rate,
+              natura_iva: get_correct_tax_rate == 0.0 ? "N2.1" : nil
             }
           }
         }
+      end
+
+      def get_correct_tax_rate
+        first_applied_tax = invoice.applied_taxes.first
+        first_applied_tax&.tax_rate || (invoice.customer.country == "IT" ? 22.0 : 0.0)
+      end
+
+      def calculate_unit_amount_cents
+        first_applied_tax = invoice.applied_taxes.first
+        if first_applied_tax
+          invoice.fees_amount_cents
+        else
+          get_correct_tax_rate > 0.0 ? invoice.total_due_amount_cents * 100 / (100 + get_correct_tax_rate) : invoice.total_due_amount_cents
+        end
       end
 
       def description
