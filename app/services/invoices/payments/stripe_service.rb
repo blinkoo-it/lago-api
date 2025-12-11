@@ -151,15 +151,24 @@ module Invoices
               line_1_quantity: 1,
               line_1_unitprice: calculate_unit_amount_cents,
               line_1_vatrate: get_correct_tax_rate,
-              natura_iva: get_correct_tax_rate == 0.0 ? "N2.1" : nil
+              natura_iva: get_correct_tax_rate > 0.0 ? nil : "N2.1"
             }
           }
         }
       end
 
+      COUNTRY_TAX_RATES = {
+        "IT" => 22.0,
+        # Add more country codes and rates as needed
+      }.freeze
+
       def get_correct_tax_rate
         first_applied_tax = invoice.applied_taxes.first
-        first_applied_tax&.tax_rate || (invoice.customer.country == "IT" ? 22.0 : 0.0)
+        if first_applied_tax
+          first_applied_tax.tax_rate
+        else
+          COUNTRY_TAX_RATES.fetch(customer.country, 0.0)
+        end
       end
 
       def calculate_unit_amount_cents
@@ -167,7 +176,8 @@ module Invoices
         if first_applied_tax
           invoice.fees_amount_cents
         else
-          get_correct_tax_rate > 0.0 ? invoice.total_due_amount_cents * 100 / (100 + get_correct_tax_rate) : invoice.total_due_amount_cents
+          tax_rate = get_correct_tax_rate
+          tax_rate > 0.0 ? (invoice.total_due_amount_cents * 100) / (100 + tax_rate) : invoice.total_due_amount_cents
         end
       end
 
