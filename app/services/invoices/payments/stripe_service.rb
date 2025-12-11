@@ -211,6 +211,7 @@ module Invoices
       # NOTE: Due to RBI limitation, all indians payment should be "on session". See: https://docs.stripe.com/india-recurring-payments
       # crypto payments don't support 'off_session'
       def setup_future_usage?
+        return false if ENV["STRIPE_DISABLE_SAVE_CARD"] == "true"
         return false if customer.country == "IN"
         return false if customer.stripe_customer.provider_payment_methods.include?("crypto")
 
