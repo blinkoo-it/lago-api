@@ -128,7 +128,7 @@ module Invoices
                 currency: invoice.currency.downcase,
                 unit_amount: invoice.total_due_amount_cents,
                 product_data: {
-                  name: invoice.fees.first.item.name
+                  name: invoice.fees.first.item_name
                 }
               }
             }
@@ -147,7 +147,7 @@ module Invoices
               invoice_issuing_date: invoice.issuing_date.iso8601,
               invoice_type: invoice.invoice_type,
               payment_type: "one-time",
-              line_1_description: invoice.fees.first.item.name,
+              line_1_description: invoice.fees.first.item_name,
               line_1_quantity: 1,
               line_1_unitprice: calculate_unit_amount_cents,
               line_1_vatrate: get_correct_tax_rate,
