@@ -177,7 +177,7 @@ module Invoices
           invoice.fees_amount_cents
         else
           tax_rate = get_correct_tax_rate
-          tax_rate > 0.0 ? (invoice.total_due_amount_cents * 100) / (100 + tax_rate) : invoice.total_due_amount_cents
+          tax_rate > 0.0 ? ((invoice.total_due_amount_cents * 100) / (100 + tax_rate)).round : invoice.total_due_amount_cents
         end
       end
 
